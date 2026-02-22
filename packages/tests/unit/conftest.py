@@ -13,8 +13,8 @@ import cosalette
 import pytest
 from cosalette.testing import FakeClock, MockMqttClient
 
-from gas2mqtt.adapters.fake import FakeMagnetometer
-from gas2mqtt.ports import MagnetometerPort
+from gas2mqtt.adapters.fake import FakeMagnetometer, FakeStorage
+from gas2mqtt.ports import MagnetometerPort, StateStoragePort
 from tests.fixtures.config import make_gas2mqtt_settings
 
 
@@ -24,6 +24,12 @@ def fake_magnetometer() -> FakeMagnetometer:
     mag = FakeMagnetometer()
     mag.initialize()
     return mag
+
+
+@pytest.fixture
+def fake_storage() -> FakeStorage:
+    """Create a fresh FakeStorage for each test."""
+    return FakeStorage()
 
 
 @pytest.fixture
@@ -44,6 +50,9 @@ def gas_counter_context(
         mqtt=mock_mqtt,
         topic_prefix="gas2mqtt",
         shutdown_event=asyncio.Event(),
-        adapters={MagnetometerPort: fake_magnetometer},
+        adapters={
+            MagnetometerPort: fake_magnetometer,
+            StateStoragePort: FakeStorage(),
+        },
         clock=fake_clock,
     )
