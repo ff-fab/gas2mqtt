@@ -6,7 +6,7 @@ gas_counter device coroutine.
 
 Test Techniques Used:
 - State Transition Testing: Trigger transitions (LOW→HIGH, HIGH→LOW)
-- Boundary Value Analysis: Counter wrap-around at COUNTER_MAX
+- Boundary Value Analysis: Counter wrap-around at COUNTER_MODULUS
 - Branch/Condition Coverage: Consumption enabled/disabled, I2C errors
 - Error Guessing: Invalid JSON in command payload, OSError during read
 """
@@ -21,7 +21,7 @@ import pytest
 from cosalette.testing import FakeClock, MockMqttClient
 
 from gas2mqtt.adapters.fake import FakeMagnetometer
-from gas2mqtt.devices.gas_counter import COUNTER_MAX, gas_counter
+from gas2mqtt.devices.gas_counter import COUNTER_MODULUS, gas_counter
 from gas2mqtt.ports import MagnetometerPort
 from tests.fixtures.async_utils import wait_for_condition
 from tests.fixtures.config import make_gas2mqtt_settings
@@ -292,31 +292,31 @@ class TestGasCounterIncrement:
         fake_clock: FakeClock,
         fake_magnetometer: FakeMagnetometer,
     ) -> None:
-        """Counter wraps to 0 after reaching COUNTER_MAX.
+        """Counter wraps to 0 after reaching COUNTER_MODULUS.
 
         Technique: Boundary Value Analysis — counter at wrap-around boundary.
 
         This test patches the counter directly via a modified device
         function since running 65535 iterations would be impractical.
         Instead, we verify the modular arithmetic:
-        (COUNTER_MAX - 1 + 1) % COUNTER_MAX == 0.
+        (COUNTER_MODULUS - 1 + 1) % COUNTER_MODULUS == 0.
         """
         # Arrange — verify the wrap-around arithmetic directly
-        counter = COUNTER_MAX - 1
+        counter = COUNTER_MODULUS - 1
 
         # Act
-        counter = (counter + 1) % COUNTER_MAX
+        counter = (counter + 1) % COUNTER_MODULUS
 
         # Assert
         assert counter == 0
 
-    async def test_counter_max_is_0xFFFF(self) -> None:
-        """COUNTER_MAX is 65535 (16-bit unsigned max).
+    async def test_counter_modulus_is_0x10000(self) -> None:
+        """COUNTER_MODULUS is 65536 (2^16).
 
         Technique: Specification-based — constant value.
         """
-        assert COUNTER_MAX == 0xFFFF
-        assert COUNTER_MAX == 65535
+        assert COUNTER_MODULUS == 0x10000
+        assert COUNTER_MODULUS == 65536
 
 
 # ======================================================================

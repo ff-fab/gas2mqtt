@@ -40,6 +40,9 @@ class MagnetometerPort(Protocol):
     def read(self) -> MagneticReading:
         """Read magnetic field and temperature from the sensor.
 
+        Pre-condition:
+            ``initialize()`` must have been called first.
+
         Returns:
             MagneticReading with bx, by, bz, and temperature_raw values.
 

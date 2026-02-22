@@ -28,8 +28,8 @@ from gas2mqtt.domain.schmitt import SchmittTrigger, TriggerState
 from gas2mqtt.ports import MagnetometerPort
 from gas2mqtt.settings import Gas2MqttSettings
 
-COUNTER_MAX = 0xFFFF
-"""Wrap-around limit for the tick counter (16-bit unsigned)."""
+COUNTER_MODULUS = 0x10000
+"""Modulus for the tick counter (wraps at 2^16)."""
 
 
 def _process_poll(
@@ -52,7 +52,7 @@ def _process_poll(
     if event is None:
         return counter, False
     if event.is_rising_edge:
-        counter = (counter + 1) % COUNTER_MAX
+        counter = (counter + 1) % COUNTER_MODULUS
         if consumption is not None:
             consumption.tick()
         logger.debug("Gas tick: counter=%d", counter)

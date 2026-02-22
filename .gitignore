@@ -61,7 +61,7 @@ log.html
 report.html
 
 # pytest JUnit XML results
-results-unit.xml
+results.xml
 results-integration.xml
 
 # Integration test server logs
