@@ -44,6 +44,15 @@ nav = [
     { "Configuration" = "configuration.md" },
     { "MQTT Topics" = "mqtt-topics.md" },
     { "Architecture" = "architecture.md" },
+    { "Reference" = [
+        { "Overview" = "reference/index.md" },
+        { "Settings" = "reference/settings.md" },
+        { "Ports" = "reference/ports.md" },
+        { "Domain" = "reference/domain.md" },
+        { "Devices" = "reference/devices.md" },
+        { "Adapters" = "reference/adapters.md" },
+        { "Application" = "reference/app.md" },
+    ] },
     { "ADRs" = "adr/" },
 ]
 

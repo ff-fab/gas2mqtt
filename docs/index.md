@@ -69,4 +69,12 @@ optional debug data to an MQTT broker — ready for Home Assistant or any MQTT c
 
     [:octicons-arrow-right-24: Architecture](architecture.md)
 
+-   :material-code-tags:{ .lg .middle } **API Reference**
+
+    ---
+
+    Auto-generated reference for settings, ports, domain logic, devices, and adapters.
+
+    [:octicons-arrow-right-24: Reference](reference/index.md)
+
 </div>
