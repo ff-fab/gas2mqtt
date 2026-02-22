@@ -140,7 +140,7 @@ tasks:
     desc: Run all tests (unit + integration) with coverage and summary
     cmds:
       # Run all tests with coverage to enable threshold validation.
-      - cmd: uv run pytest {{.PKG}}/tests/unit/ -v --tb=short --junitxml=results-unit.xml --cov={{.MODULE_NAME}} --cov-branch --cov-report=json
+      - cmd: uv run pytest {{.PKG}}/tests/ -v --tb=short --junitxml=results-unit.xml --cov={{.MODULE_NAME}} --cov-branch --cov-report=json
         ignore_error: true
 
       - uv run python {{.PKG}}/tests/scripts/summarize_tests.py --coverage-file=coverage.json
