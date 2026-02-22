@@ -40,6 +40,11 @@ edit_uri = "edit/main/docs/"
 
 nav = [
     { "Home" = "index.md" },
+    { "Getting Started" = "getting-started.md" },
+    { "Configuration" = "configuration.md" },
+    { "MQTT Topics" = "mqtt-topics.md" },
+    { "Architecture" = "architecture.md" },
+    { "ADRs" = "adr/" },
 ]
 
 # Note: exclude_docs is not yet supported in zensical.toml (see Zensical docs).
