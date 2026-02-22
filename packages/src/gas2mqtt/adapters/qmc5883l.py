@@ -63,7 +63,7 @@ class Qmc5883lAdapter:
         Bytes 7-8: Temperature (little-endian signed 16)
     """
 
-    def __init__(self, bus_number: int, address: int) -> None:
+    def __init__(self, bus_number: int = 1, address: int = 0x0D) -> None:
         self._bus_number = bus_number
         self._address = address
         self._bus: smbus2.SMBus | None = None
