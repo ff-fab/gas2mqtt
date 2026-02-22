@@ -1,11 +1,14 @@
 """Integration tests for gas2mqtt application wiring.
 
-Verifies that ``create_app()`` correctly wires all components and that
-the lifespan properly manages the magnetometer adapter lifecycle.
+Verifies that ``create_app()`` correctly wires all components, that
+the lifespan properly manages the magnetometer adapter lifecycle,
+and that extracted device coroutines publish the expected MQTT state.
 
 Test Techniques Used:
 - Specification-based: App configuration matches expectations
-- Integration: Components wire together correctly
+- Integration: Real device coroutines exercised end-to-end
+- State Transition: Lifespan startup/shutdown lifecycle
+- Branch Coverage: Magnetometer early-return when disabled
 - Error Guessing: Lifespan closes adapter even on error
 """
 
@@ -19,11 +22,10 @@ import pytest
 from cosalette.testing import FakeClock, MockMqttClient
 
 from gas2mqtt.adapters.fake import FakeMagnetometer
-from gas2mqtt.devices.magnetometer import make_magnetometer_handler
-from gas2mqtt.devices.temperature import make_temperature_handler
+from gas2mqtt.devices.magnetometer import magnetometer_device
+from gas2mqtt.devices.temperature import temperature_device
 from gas2mqtt.main import create_app, lifespan
 from gas2mqtt.ports import MagnetometerPort
-from gas2mqtt.settings import Gas2MqttSettings
 from tests.fixtures.config import make_gas2mqtt_settings
 
 # ---------------------------------------------------------------------------
@@ -120,33 +122,37 @@ class TestLifespan:
 
 @pytest.mark.integration
 class TestTemperatureDeviceWiring:
-    """Verify temperature device publishes calibrated state via MQTT."""
+    """Verify temperature_device() publishes calibrated state via MQTT."""
 
     async def test_publishes_calibrated_temperature(self) -> None:
-        """Temperature handler → DeviceContext → MQTT publish flow.
+        """temperature_device() publishes initial state, then exits on shutdown.
 
-        Technique: Integration — end-to-end data flow through real components.
+        Technique: Integration — end-to-end data flow through the real
+        device coroutine with shutdown pre-signalled so the loop exits
+        after the initial publish.
         """
         # Arrange
         mag = FakeMagnetometer()
         mag.temperature_raw = 2500  # → 0.008 * 2500 + 20.3 = 40.3
         settings = make_gas2mqtt_settings(temperature_interval=0.01)
         mqtt = MockMqttClient()
+        shutdown = asyncio.Event()
 
         ctx = cosalette.DeviceContext(
             name="temperature",
             settings=settings,
             mqtt=mqtt,
             topic_prefix="gas2mqtt",
-            shutdown_event=asyncio.Event(),
+            shutdown_event=shutdown,
             adapters={MagnetometerPort: mag},
             clock=FakeClock(),
         )
 
-        handler = make_temperature_handler(mag, settings)
+        # Pre-signal shutdown so the loop exits after the initial publish
+        shutdown.set()
 
         # Act
-        await ctx.publish_state(await handler())
+        await temperature_device(ctx)
 
         # Assert
         assert mqtt.publish_count >= 1
@@ -163,12 +169,13 @@ class TestTemperatureDeviceWiring:
 
 @pytest.mark.integration
 class TestMagnetometerDeviceWiring:
-    """Verify debug magnetometer device conditional behavior."""
+    """Verify magnetometer_device() conditional behavior."""
 
     async def test_publishes_raw_values_when_enabled(self) -> None:
-        """Debug device publishes raw bx/by/bz when enabled.
+        """magnetometer_device() publishes raw bx/by/bz when enabled.
 
-        Technique: Integration — verifying wiring with enable flag on.
+        Technique: Integration — real device coroutine exercised with
+        shutdown pre-signalled so it exits after the initial publish.
         """
         # Arrange
         mag = FakeMagnetometer()
@@ -176,21 +183,23 @@ class TestMagnetometerDeviceWiring:
         mag.by = -200
         mag.bz = -5000
         mqtt = MockMqttClient()
+        shutdown = asyncio.Event()
 
         ctx = cosalette.DeviceContext(
             name="magnetometer",
             settings=make_gas2mqtt_settings(enable_debug_device=True),
             mqtt=mqtt,
             topic_prefix="gas2mqtt",
-            shutdown_event=asyncio.Event(),
+            shutdown_event=shutdown,
             adapters={MagnetometerPort: mag},
             clock=FakeClock(),
         )
 
-        handler = make_magnetometer_handler(mag)
+        # Pre-signal shutdown so the loop exits after the initial publish
+        shutdown.set()
 
         # Act
-        await ctx.publish_state(await handler())
+        await magnetometer_device(ctx)
 
         # Assert
         assert mqtt.publish_count >= 1
@@ -200,37 +209,28 @@ class TestMagnetometerDeviceWiring:
         assert payload == {"bx": 100, "by": -200, "bz": -5000}
 
     async def test_noop_when_disabled(self) -> None:
-        """Debug device returns immediately when enable_debug_device=False.
+        """magnetometer_device() returns immediately when disabled.
 
-        Technique: Branch Coverage — verifying the early-return path.
-
-        The _magnetometer device handler in main.py checks
-        settings.enable_debug_device and returns immediately if False.
-        We replicate the exact conditional logic to verify no publish
-        occurs.
+        Technique: Branch Coverage — verifying the early-return path by
+        calling the real device coroutine and asserting zero publishes.
         """
         # Arrange
         mag = FakeMagnetometer()
         mqtt = MockMqttClient()
-        settings = make_gas2mqtt_settings(enable_debug_device=False)
+        shutdown = asyncio.Event()
 
         ctx = cosalette.DeviceContext(
             name="magnetometer",
-            settings=settings,
+            settings=make_gas2mqtt_settings(enable_debug_device=False),
             mqtt=mqtt,
             topic_prefix="gas2mqtt",
-            shutdown_event=asyncio.Event(),
+            shutdown_event=shutdown,
             adapters={MagnetometerPort: mag},
             clock=FakeClock(),
         )
 
-        # Act — replicate _magnetometer's early-return logic
-        effective_settings: Gas2MqttSettings = ctx.settings  # type: ignore[assignment]
-        if not effective_settings.enable_debug_device:
-            pass  # mirrors the `return` in _magnetometer
-        else:
-            handler = make_magnetometer_handler(mag)
-            await ctx.publish_state(await handler())
+        # Act — call the real device coroutine
+        await magnetometer_device(ctx)
 
         # Assert — no messages published when debug is off
         assert mqtt.publish_count == 0

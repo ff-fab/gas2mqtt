@@ -19,6 +19,8 @@ from __future__ import annotations
 import logging
 from collections.abc import Awaitable, Callable
 
+import cosalette
+
 from gas2mqtt.domain.ewma import EwmaFilter
 from gas2mqtt.ports import MagnetometerPort
 from gas2mqtt.settings import Gas2MqttSettings
@@ -56,3 +58,22 @@ def make_temperature_handler(
         return {"temperature": round(filtered, 1)}
 
     return handler
+
+
+async def temperature_device(ctx: cosalette.DeviceContext) -> None:
+    """Temperature device coroutine — polls and publishes filtered temperature.
+
+    Designed for ``@app.device("temperature")`` registration.  Creates a
+    temperature handler with the EWMA filter, publishes an initial state,
+    then loops at ``settings.temperature_interval``.
+
+    Args:
+        ctx: Per-device context provided by cosalette.
+    """
+    settings: Gas2MqttSettings = ctx.settings  # type: ignore[assignment]
+    magnetometer = ctx.adapter(MagnetometerPort)  # type: ignore[type-abstract]
+    handler = make_temperature_handler(magnetometer, settings)
+    await ctx.publish_state(await handler())
+    while not ctx.shutdown_requested:
+        await ctx.sleep(settings.temperature_interval)
+        await ctx.publish_state(await handler())

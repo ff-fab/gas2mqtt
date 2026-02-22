@@ -16,8 +16,8 @@ from gas2mqtt import __version__
 from gas2mqtt.adapters.fake import FakeMagnetometer
 from gas2mqtt.adapters.qmc5883l import Qmc5883lAdapter
 from gas2mqtt.devices.gas_counter import gas_counter
-from gas2mqtt.devices.magnetometer import make_magnetometer_handler
-from gas2mqtt.devices.temperature import make_temperature_handler
+from gas2mqtt.devices.magnetometer import magnetometer_device
+from gas2mqtt.devices.temperature import temperature_device
 from gas2mqtt.ports import MagnetometerPort
 from gas2mqtt.settings import Gas2MqttSettings
 
@@ -56,6 +56,11 @@ def create_app() -> cosalette.App:
     )
 
     # --- Adapter registration ---
+    # NOTE: Qmc5883lAdapter is constructed by cosalette with zero args,
+    # so it uses its own defaults (bus_number=1, address=0x0D).  These
+    # match Gas2MqttSettings.i2c_bus / i2c_address defaults.  If custom
+    # I2C config is ever needed, a factory lambda or lifespan-based
+    # reconfiguration would be required.
     app.adapter(MagnetometerPort, Qmc5883lAdapter, dry_run=FakeMagnetometer)
 
     # --- Device registration ---
@@ -66,25 +71,11 @@ def create_app() -> cosalette.App:
 
     @app.device("temperature")
     async def _temperature(ctx: cosalette.DeviceContext) -> None:
-        settings: Gas2MqttSettings = ctx.settings  # type: ignore[assignment]
-        magnetometer = ctx.adapter(MagnetometerPort)  # type: ignore[type-abstract]
-        handler = make_temperature_handler(magnetometer, settings)
-        await ctx.publish_state(await handler())
-        while not ctx.shutdown_requested:
-            await ctx.sleep(settings.temperature_interval)
-            await ctx.publish_state(await handler())
+        await temperature_device(ctx)
 
     @app.device("magnetometer")
     async def _magnetometer(ctx: cosalette.DeviceContext) -> None:
-        settings: Gas2MqttSettings = ctx.settings  # type: ignore[assignment]
-        if not settings.enable_debug_device:
-            return
-        magnetometer = ctx.adapter(MagnetometerPort)  # type: ignore[type-abstract]
-        handler = make_magnetometer_handler(magnetometer)
-        await ctx.publish_state(await handler())
-        while not ctx.shutdown_requested:
-            await ctx.sleep(settings.poll_interval)
-            await ctx.publish_state(await handler())
+        await magnetometer_device(ctx)
 
     return app
 
