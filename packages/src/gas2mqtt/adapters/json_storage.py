@@ -57,8 +57,10 @@ class JsonFileStorage:
         if self._path.exists():
             try:
                 existing = json.loads(self._path.read_text(encoding="utf-8"))
-            except json.JSONDecodeError, OSError:
-                logger.warning("Corrupted state file %s, starting fresh", self._path)
+            except (json.JSONDecodeError, OSError) as exc:
+                logger.warning(
+                    "Corrupted state file %s, starting fresh: %s", self._path, exc
+                )
 
         existing[key] = data
 

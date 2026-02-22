@@ -27,12 +27,6 @@ def fake_magnetometer() -> FakeMagnetometer:
 
 
 @pytest.fixture
-def fake_storage() -> FakeStorage:
-    """Create a fresh FakeStorage for each test."""
-    return FakeStorage()
-
-
-@pytest.fixture
 def gas_counter_context(
     mock_mqtt: MockMqttClient,
     fake_clock: FakeClock,

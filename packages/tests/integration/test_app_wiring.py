@@ -251,7 +251,7 @@ class TestStorageAdapterWiring:
     depending on the ``state_file`` setting.
     """
 
-    async def test_storage_adapter_returns_null_when_no_state_file(self) -> None:
+    def test_storage_adapter_returns_null_when_no_state_file(self) -> None:
         """Factory returns NullStorage when state_file is None (default)."""
         # Arrange
         settings = make_gas2mqtt_settings(state_file=None)
@@ -262,7 +262,7 @@ class TestStorageAdapterWiring:
         # Assert
         assert isinstance(storage, NullStorage)
 
-    async def test_storage_adapter_returns_json_file_when_configured(
+    def test_storage_adapter_returns_json_file_when_configured(
         self,
         tmp_path: Path,
     ) -> None:
