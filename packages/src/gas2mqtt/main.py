@@ -3,13 +3,6 @@
 Wires the cosalette App with all devices, adapters, and lifespan
 management.  The module-level ``app`` object is the entry point
 for the CLI: ``gas2mqtt`` runs ``app.run()``.
-
-Adapter factories use cosalette 0.1.1 settings injection — the
-framework passes the resolved ``Gas2MqttSettings`` instance to
-factories that declare it as a parameter.
-
-Temperature and magnetometer are registered as ``@app.telemetry``
-devices (cosalette 0.1.2) with publish strategies.
 """
 
 from __future__ import annotations
@@ -102,11 +95,6 @@ def create_app() -> cosalette.App:
         await gas_counter(ctx)
 
     # Registration-time config: read field defaults from the model class.
-    # We avoid instantiating Gas2MqttSettings() here because module-level
-    # create_app() runs at import time, and environments may have extra
-    # .env entries that fail pydantic's extra='forbid' validation.
-    # Runtime settings (calibration coefficients, adapter config) are
-    # injected by cosalette DI into handler functions.
     _fields = Gas2MqttSettings.model_fields
     temp_interval: float = _fields["temperature_interval"].default
     poll_interval: float = _fields["poll_interval"].default
