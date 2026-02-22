@@ -32,6 +32,33 @@ COUNTER_MAX = 0xFFFF
 """Wrap-around limit for the tick counter (16-bit unsigned)."""
 
 
+def _process_poll(
+    magnetometer: MagnetometerPort,
+    trigger: SchmittTrigger,
+    counter: int,
+    consumption: ConsumptionTracker | None,
+    logger: logging.Logger,
+) -> tuple[int, bool]:
+    """Read magnetometer and process trigger event.
+
+    Returns:
+        Tuple of (updated counter, whether state should be published).
+
+    Raises:
+        OSError: If the I2C read fails.
+    """
+    reading = magnetometer.read()
+    event = trigger.update(reading.bz)
+    if event is None:
+        return counter, False
+    if event.is_rising_edge:
+        counter = (counter + 1) % COUNTER_MAX
+        if consumption is not None:
+            consumption.tick()
+        logger.debug("Gas tick: counter=%d", counter)
+    return counter, True
+
+
 async def gas_counter(ctx: cosalette.DeviceContext) -> None:
     """Gas counter device — polls magnetometer, detects ticks.
 
@@ -88,14 +115,14 @@ async def gas_counter(ctx: cosalette.DeviceContext) -> None:
 
     while not ctx.shutdown_requested:
         try:
-            reading = magnetometer.read()
-            event = trigger.update(reading.bz)
-            if event is not None:
-                if event.is_rising_edge:
-                    counter = (counter + 1) % COUNTER_MAX
-                    if consumption is not None:
-                        consumption.tick()
-                    logger.debug("Gas tick: counter=%d", counter)
+            counter, should_publish = _process_poll(
+                magnetometer,
+                trigger,
+                counter,
+                consumption,
+                logger,
+            )
+            if should_publish:
                 await ctx.publish_state(_build_state())
         except OSError:
             logger.exception("I2C read error")

@@ -11,6 +11,7 @@ version: '3'
 vars:
   PKG: packages
   MODULE_NAME: 'gas2mqtt'
+  COVERAGE_THRESHOLD: '80'
 
 tasks:
   default:
@@ -269,7 +270,7 @@ tasks:
     desc: CI unit tests with coverage summary
     cmds:
       - uv run pytest {{.PKG}}/tests/unit/ --cov={{.MODULE_NAME}} --cov-branch --cov-report=xml --cov-report=json --cov-report=term --junitxml=results-unit.xml
-      - uv run python {{.PKG}}/tests/scripts/summarize_tests.py --coverage-file=coverage.json --fail-under={{ coverage_threshold }}
+      - uv run python {{.PKG}}/tests/scripts/summarize_tests.py --coverage-file=coverage.json --fail-under={{.COVERAGE_THRESHOLD}}
 
   ci:test:integration:
     desc: CI integration tests (pytest)
