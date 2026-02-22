@@ -267,9 +267,9 @@ tasks:
   # ===========================================================================
 
   ci:test:unit:
-    desc: CI unit tests with coverage summary
+    desc: CI unit + integration tests with coverage summary
     cmds:
-      - uv run pytest {{.PKG}}/tests/unit/ --cov={{.MODULE_NAME}} --cov-branch --cov-report=xml --cov-report=json --cov-report=term --junitxml=results-unit.xml
+      - uv run pytest {{.PKG}}/tests/ --cov={{.MODULE_NAME}} --cov-branch --cov-report=xml --cov-report=json --cov-report=term --junitxml=results-unit.xml
       - uv run python {{.PKG}}/tests/scripts/summarize_tests.py --coverage-file=coverage.json --fail-under={{.COVERAGE_THRESHOLD}}
 
   ci:test:integration:
