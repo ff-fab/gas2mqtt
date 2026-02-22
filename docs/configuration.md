@@ -26,6 +26,7 @@ you need.
 | Client ID     | `GAS2MQTT_MQTT__CLIENT_ID`  | *(auto)*    | MQTT client identifier (auto-generated if empty) |
 | Topic prefix  | `GAS2MQTT_MQTT__TOPIC_PREFIX` | *(app name)* | Root prefix for all MQTT topics |
 | Reconnect interval | `GAS2MQTT_MQTT__RECONNECT_INTERVAL` | `5.0` | Initial reconnect delay (seconds, exponential backoff) |
+| Reconnect max      | `GAS2MQTT_MQTT__RECONNECT_MAX_INTERVAL` | `300.0` | Upper bound for reconnect backoff (seconds) |
 
 !!! info "Double-underscore delimiter"
     MQTT settings are **nested** inside the settings model. Environment variables use
@@ -43,6 +44,8 @@ you need.
 | Level         | `GAS2MQTT_LOGGING__LEVEL`       | `INFO`   | Root log level                |
 | Format        | `GAS2MQTT_LOGGING__FORMAT`      | `json`   | `json` or `text` output format |
 | File          | `GAS2MQTT_LOGGING__FILE`        | —        | Optional log file path        |
+| Max file size | `GAS2MQTT_LOGGING__MAX_FILE_SIZE_MB` | `10` | Max log file size in MB before rotation |
+| Backup count  | `GAS2MQTT_LOGGING__BACKUP_COUNT` | `3`     | Number of rotated log files to keep |
 
 !!! tip "Choosing a log format"
     Use `json` (the default) for Docker and container environments — structured logs
@@ -74,7 +77,7 @@ you need.
     - **Upper threshold** = `trigger_level + trigger_hysteresis`
     - **Lower threshold** = `trigger_level − trigger_hysteresis`
 
-    With defaults (`-5000` / `700`), the trigger opens at **−4300** and closes at
+    With defaults (`-5000` / `700`), the trigger closes at **−4300** and opens at
     **−5700**.
 
 ### Polling
@@ -125,7 +128,7 @@ GAS2MQTT_MQTT__PORT=1883
 # GAS2MQTT_MQTT__USERNAME=
 # GAS2MQTT_MQTT__PASSWORD=
 # GAS2MQTT_MQTT__CLIENT_ID=gas2mqtt
-# GAS2MQTT_MQTT__PREFIX=gas2mqtt
+# GAS2MQTT_MQTT__TOPIC_PREFIX=gas2mqtt
 
 # --- Logging ---
 # GAS2MQTT_LOGGING__LEVEL=INFO

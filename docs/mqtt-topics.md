@@ -14,10 +14,12 @@ under the `gas2mqtt/` prefix. One topic accepts inbound commands.
 | `gas2mqtt/gas_counter/availability`  | outbound | `"online"` / `"offline"`         | yes    | 1   |
 | `gas2mqtt/temperature/state`         | outbound | Temperature JSON                 | yes    | 1   |
 | `gas2mqtt/temperature/availability`  | outbound | `"online"` / `"offline"`         | yes    | 1   |
-| `gas2mqtt/magnetometer/state`        | outbound | Raw magnetometer JSON            | yes    | 1   |
-| `gas2mqtt/magnetometer/availability` | outbound | `"online"` / `"offline"`         | yes    | 1   |
+| `gas2mqtt/magnetometer/state` ¹      | outbound | Raw magnetometer JSON            | yes    | 1   |
+| `gas2mqtt/magnetometer/availability` ¹ | outbound | `"online"` / `"offline"`       | yes    | 1   |
 | `gas2mqtt/status`                    | outbound | Heartbeat JSON + LWT `"offline"` | yes    | 1   |
 | `gas2mqtt/error`                     | outbound | Error JSON                       | no     | 1   |
+
+¹ Only active when `GAS2MQTT_ENABLE_DEBUG_DEVICE=true`.
 
 ---
 

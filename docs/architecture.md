@@ -137,7 +137,7 @@ sequenceDiagram
         P-->>Dev: MagneticReading
         Dev->>D: trigger.update(bz)
         D-->>Dev: TriggerEvent | None
-        alt Rising edge detected
+        alt Trigger state changed
             Dev->>M: publish gas_counter/state
         end
     end

@@ -63,7 +63,7 @@ Connect the QMC5883L to the Raspberry Pi I2C pins:
     ```bash
     pip install gas2mqtt
     # or with uv:
-    uv add gas2mqtt
+    uv pip install gas2mqtt
     ```
 
     Create a `.env` file or set environment variables, then run:
