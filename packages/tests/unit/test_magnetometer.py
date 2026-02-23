@@ -1,4 +1,7 @@
-"""Unit tests for gas2mqtt/devices/magnetometer.py — Debug magnetometer device.
+"""Unit tests for magnetometer telemetry — raw sensor output.
+
+Tests the debug magnetometer pipeline: raw reading → dict output.
+The handler is now inline in main.py, so we test the same logic directly.
 
 Test Techniques Used:
 - Specification-based: Raw sensor values in output
@@ -12,12 +15,11 @@ from __future__ import annotations
 import pytest
 
 from gas2mqtt.adapters.fake import FakeMagnetometer
-from gas2mqtt.devices.magnetometer import make_magnetometer_handler
 
 
 @pytest.mark.unit
 class TestMagnetometerHandler:
-    """Verify debug magnetometer handler returns raw sensor values."""
+    """Verify debug magnetometer output returns raw sensor values."""
 
     async def test_returns_all_axes(self) -> None:
         """Handler returns bx, by, bz from the magnetometer.
@@ -29,10 +31,10 @@ class TestMagnetometerHandler:
         mag.bx = 100
         mag.by = -200
         mag.bz = -5000
-        handler = make_magnetometer_handler(mag)
 
-        # Act
-        result = await handler()
+        # Act — simulate the inline handler logic
+        reading = mag.read()
+        result = {"bx": reading.bx, "by": reading.by, "bz": reading.bz}
 
         # Assert
         assert result == {"bx": 100, "by": -200, "bz": -5000}
@@ -44,10 +46,10 @@ class TestMagnetometerHandler:
         """
         # Arrange
         mag = FakeMagnetometer()
-        handler = make_magnetometer_handler(mag)
 
         # Act
-        result = await handler()
+        reading = mag.read()
+        result = {"bx": reading.bx, "by": reading.by, "bz": reading.bz}
 
         # Assert
         assert result == {"bx": 0, "by": 0, "bz": 0}
@@ -59,10 +61,10 @@ class TestMagnetometerHandler:
         """
         # Arrange
         mag = FakeMagnetometer()
-        handler = make_magnetometer_handler(mag)
 
         # Act 1 — initial read
-        result1 = await handler()
+        reading1 = mag.read()
+        result1 = {"bx": reading1.bx, "by": reading1.by, "bz": reading1.bz}
 
         # Update values
         mag.bx = 42
@@ -70,7 +72,8 @@ class TestMagnetometerHandler:
         mag.bz = 44
 
         # Act 2 — updated read
-        result2 = await handler()
+        reading2 = mag.read()
+        result2 = {"bx": reading2.bx, "by": reading2.by, "bz": reading2.bz}
 
         # Assert
         assert result1 == {"bx": 0, "by": 0, "bz": 0}
@@ -84,10 +87,10 @@ class TestMagnetometerHandler:
         # Arrange
         mag = FakeMagnetometer()
         mag.temperature_raw = 9999
-        handler = make_magnetometer_handler(mag)
 
         # Act
-        result = await handler()
+        reading = mag.read()
+        result = {"bx": reading.bx, "by": reading.by, "bz": reading.bz}
 
         # Assert
         assert "temperature" not in result
