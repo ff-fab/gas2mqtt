@@ -113,7 +113,7 @@ class TestTemperaturePipeline:
         # Assert
         assert pt1.alpha == pytest.approx(0.2)
 
-    async def test_handler_produces_calibrated_state(self) -> None:
+    def test_handler_produces_calibrated_state(self) -> None:
         """Full handler pipeline: magnetometer → calibrate → PT1 → round.
 
         Technique: Integration — exercises the same code path as main.py
