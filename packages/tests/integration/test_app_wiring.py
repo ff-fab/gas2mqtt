@@ -15,16 +15,11 @@ Test Techniques Used:
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import cosalette
 import pytest
 
-from gas2mqtt.adapters.fake import FakeMagnetometer, NullStorage
-from gas2mqtt.adapters.json_storage import JsonFileStorage
-from gas2mqtt.main import _make_storage_adapter, app
-from gas2mqtt.ports import StateStoragePort
-from tests.fixtures.config import make_gas2mqtt_settings
+from gas2mqtt.adapters.fake import FakeMagnetometer
+from gas2mqtt.main import app
 
 # ---------------------------------------------------------------------------
 # App creation
@@ -172,40 +167,19 @@ class TestMagnetometerRegistration:
 
 
 @pytest.mark.integration
-class TestStorageAdapterWiring:
-    """Verify StateStoragePort adapter registration.
+class TestStoreWiring:
+    """Verify cosalette Store is wired via App constructor."""
 
-    Technique: Specification-based — adapter factory produces correct type
-    depending on the ``state_file`` setting.
-    """
+    def test_app_has_store_configured(self) -> None:
+        """Module-level app has a Store backend set.
 
-    def test_storage_adapter_returns_null_when_no_state_file(self) -> None:
-        """Factory returns NullStorage when state_file is None (default)."""
-        # Arrange
-        settings = make_gas2mqtt_settings(state_file=None)
+        Technique: Specification-based — store is wired at module level.
+        """
+        assert app._store is not None  # noqa: SLF001
 
-        # Act
-        storage = _make_storage_adapter(settings)
+    def test_app_has_null_store_by_default(self) -> None:
+        """App uses NullStore when state_file is not configured (default).
 
-        # Assert
-        assert isinstance(storage, NullStorage)
-
-    def test_storage_adapter_returns_json_file_when_configured(
-        self,
-        tmp_path: Path,
-    ) -> None:
-        """Factory returns JsonFileStorage when state_file is set."""
-        # Arrange
-        state_path = tmp_path / "state.json"
-        settings = make_gas2mqtt_settings(state_file=state_path)
-
-        # Act
-        storage = _make_storage_adapter(settings)
-
-        # Assert
-        assert isinstance(storage, JsonFileStorage)
-
-    def test_storage_port_registered_in_app(self) -> None:
-        """Module-level app registers StateStoragePort in the adapter registry."""
-        # Assert
-        assert StateStoragePort in app._adapters  # noqa: SLF001
+        Technique: Specification-based — default state_file is None.
+        """
+        assert isinstance(app._store, cosalette.NullStore)  # noqa: SLF001

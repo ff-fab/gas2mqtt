@@ -11,27 +11,21 @@ import cosalette
 from cosalette import OnChange, Pt1Filter
 
 from gas2mqtt import __version__
-from gas2mqtt.adapters.fake import FakeMagnetometer, NullStorage
-from gas2mqtt.adapters.json_storage import JsonFileStorage
+from gas2mqtt.adapters.fake import FakeMagnetometer
 from gas2mqtt.adapters.qmc5883l import Qmc5883lAdapter
 from gas2mqtt.devices.gas_counter import gas_counter
-from gas2mqtt.ports import MagnetometerPort, StateStoragePort
+from gas2mqtt.ports import MagnetometerPort
 from gas2mqtt.settings import Gas2MqttSettings
 
+# --- Settings & store ---
 
-def _make_storage_adapter(
-    settings: Gas2MqttSettings,
-) -> JsonFileStorage | NullStorage:
-    """Create the appropriate storage adapter based on settings.
+settings = Gas2MqttSettings()
 
-    Returns :class:`NullStorage` when ``state_file`` is ``None``
-    (persistence disabled), otherwise :class:`JsonFileStorage`
-    pointing at the configured path.
-    """
-    if settings.state_file is None:
-        return NullStorage()
-    return JsonFileStorage(settings.state_file)
-
+_store: cosalette.Store = (
+    cosalette.JsonFileStore(settings.state_file)
+    if settings.state_file is not None
+    else cosalette.NullStore()
+)
 
 # --- App creation ---
 
@@ -40,15 +34,13 @@ app = cosalette.App(
     version=__version__,
     description="Domestic gas meter reader via QMC5883L magnetometer",
     settings_class=Gas2MqttSettings,
+    store=_store,
 )
 """Module-level app instance — entry point for the CLI."""
-
-settings: Gas2MqttSettings = app.settings  # type: ignore[assignment]
 
 # --- Adapter registration ---
 
 app.adapter(MagnetometerPort, Qmc5883lAdapter, dry_run=FakeMagnetometer)
-app.adapter(StateStoragePort, _make_storage_adapter, dry_run=NullStorage)
 
 # --- Device registration ---
 
