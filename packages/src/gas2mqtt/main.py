@@ -20,6 +20,10 @@ from gas2mqtt.ports import MagnetometerPort
 from gas2mqtt.settings import Gas2MqttSettings
 
 # --- Settings & store ---
+# Eagerly instantiated so registration calls below can use concrete values
+# (intervals, enabled flags, state_file). The same class is passed via
+# settings_class= so cosalette's DI injects an identical instance into
+# device handlers at runtime.
 
 settings = Gas2MqttSettings()
 

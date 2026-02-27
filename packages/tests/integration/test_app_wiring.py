@@ -122,12 +122,12 @@ class TestMagnetometerRegistration:
     """Verify magnetometer conditional registration via enabled= parameter.
 
     The module-level app uses ``enabled=settings.enable_debug_device``
-    on the ``@app.telemetry("magnetometer", ...)`` decorator. Since the
+    on the ``app.add_telemetry("magnetometer", ...)`` call.  Since the
     default settings have ``enable_debug_device=False``, the magnetometer
     is NOT registered in the singleton app.
 
-    The ``_magnetometer`` handler function is still defined at module level,
-    so we can test it directly to verify correctness independent of wiring.
+    The handler in ``gas2mqtt.devices.magnetometer`` can still be tested
+    directly to verify correctness independent of wiring.
     """
 
     def test_noop_when_disabled_by_default(self) -> None:

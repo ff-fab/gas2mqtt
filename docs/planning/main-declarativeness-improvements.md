@@ -227,12 +227,14 @@ All improvements #1–#5 landed in cosalette 0.1.5. The vision is now reality:
 from __future__ import annotations
 
 import cosalette
-from cosalette import OnChange, Pt1Filter
+from cosalette import OnChange
 
 from gas2mqtt import __version__
 from gas2mqtt.adapters.fake import FakeMagnetometer
 from gas2mqtt.adapters.qmc5883l import Qmc5883lAdapter
 from gas2mqtt.devices.gas_counter import gas_counter
+from gas2mqtt.devices.magnetometer import magnetometer
+from gas2mqtt.devices.temperature import make_pt1, temperature
 from gas2mqtt.ports import MagnetometerPort
 from gas2mqtt.settings import Gas2MqttSettings
 
@@ -257,31 +259,23 @@ app = cosalette.App(
 
 app.add_device("gas_counter", gas_counter)
 
-def _make_pt1(settings: Gas2MqttSettings) -> Pt1Filter:
-    return Pt1Filter(tau=settings.smoothing_tau, dt=settings.temperature_interval)
+app.add_telemetry(
+    "temperature",
+    temperature,
+    interval=settings.temperature_interval,
+    publish=OnChange(threshold={"temperature": 0.05}),
+    init=make_pt1,
+)
 
-@app.telemetry("temperature",
-               interval=settings.temperature_interval,
-               publish=OnChange(threshold={"temperature": 0.05}),
-               init=_make_pt1)
-async def _temperature(
-    magnetometer: MagnetometerPort,
-    settings: Gas2MqttSettings,
-    pt1: Pt1Filter,
-) -> dict[str, object]:
-    reading = magnetometer.read()
-    raw_celsius = settings.temp_scale * reading.temperature_raw + settings.temp_offset
-    return {"temperature": round(pt1.update(raw_celsius), 1)}
-
-@app.telemetry("magnetometer",
-               interval=settings.poll_interval,
-               enabled=settings.enable_debug_device)
-async def _magnetometer(magnetometer: MagnetometerPort) -> dict[str, object]:
-    reading = magnetometer.read()
-    return {"bx": reading.bx, "by": reading.by, "bz": reading.bz}
+app.add_telemetry(
+    "magnetometer",
+    magnetometer,
+    interval=settings.poll_interval,
+    enabled=settings.enable_debug_device,
+)
 ```
 
-**~85 lines** down from the original **~128** — a **~34% reduction**, with zero
+**63 lines** down from the original **~128** — a **~51% reduction**, with zero
 `create_app()` function, no lifespan hook, no adapter factory functions, declarative
 adapter registration, framework-managed persistence via `store=`, and every device
-visible at the top level.
+handler in its own module under `devices/`.
