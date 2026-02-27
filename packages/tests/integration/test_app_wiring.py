@@ -142,18 +142,18 @@ class TestMagnetometerRegistration:
         assert "magnetometer" not in telemetry_names
 
     async def test_magnetometer_handler_returns_readings(self) -> None:
-        """_magnetometer handler returns correct reading dict.
+        """magnetometer handler returns correct reading dict.
 
         Technique: Integration — exercise the handler directly with a
         fake magnetometer to verify it works regardless of enabled= wiring.
         """
         # Arrange
-        from gas2mqtt.main import _magnetometer
+        from gas2mqtt.devices.magnetometer import magnetometer
 
         mag = FakeMagnetometer()
         async with mag:
             # Act
-            result = await _magnetometer(mag)
+            result = await magnetometer(mag)
 
         # Assert
         assert "bx" in result

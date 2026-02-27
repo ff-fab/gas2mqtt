@@ -8,12 +8,14 @@ The module-level ``app`` object is the entry point for the CLI:
 from __future__ import annotations
 
 import cosalette
-from cosalette import OnChange, Pt1Filter
+from cosalette import OnChange
 
 from gas2mqtt import __version__
 from gas2mqtt.adapters.fake import FakeMagnetometer
 from gas2mqtt.adapters.qmc5883l import Qmc5883lAdapter
 from gas2mqtt.devices.gas_counter import gas_counter
+from gas2mqtt.devices.magnetometer import magnetometer
+from gas2mqtt.devices.temperature import make_pt1, temperature
 from gas2mqtt.ports import MagnetometerPort
 from gas2mqtt.settings import Gas2MqttSettings
 
@@ -45,35 +47,17 @@ app = cosalette.App(
 
 app.add_device("gas_counter", gas_counter)
 
-
-def _make_pt1(settings: Gas2MqttSettings) -> Pt1Filter:
-    """Create PT1 filter from settings for temperature smoothing."""
-    return Pt1Filter(tau=settings.smoothing_tau, dt=settings.temperature_interval)
-
-
-@app.telemetry(
+app.add_telemetry(
     "temperature",
+    temperature,
     interval=settings.temperature_interval,
     publish=OnChange(threshold={"temperature": 0.05}),
-    init=_make_pt1,
+    init=make_pt1,
 )
-async def _temperature(
-    magnetometer: MagnetometerPort,
-    settings: Gas2MqttSettings,
-    pt1: Pt1Filter,
-) -> dict[str, object]:
-    reading = magnetometer.read()
-    raw_celsius = settings.temp_scale * reading.temperature_raw + settings.temp_offset
-    return {"temperature": round(pt1.update(raw_celsius), 1)}
 
-
-@app.telemetry(
+app.add_telemetry(
     "magnetometer",
+    magnetometer,
     interval=settings.poll_interval,
     enabled=settings.enable_debug_device,
 )
-async def _magnetometer(
-    magnetometer: MagnetometerPort,
-) -> dict[str, object]:
-    reading = magnetometer.read()
-    return {"bx": reading.bx, "by": reading.by, "bz": reading.bz}
