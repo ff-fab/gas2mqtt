@@ -33,70 +33,56 @@ def _make_storage_adapter(
     return JsonFileStorage(settings.state_file)
 
 
-def create_app() -> cosalette.App:
-    """Create and wire the gas2mqtt application.
+# --- App creation ---
 
-    Registers adapters, the gas counter device, temperature telemetry
-    (with PT1 smoothing and OnChange publish strategy), and optional
-    debug magnetometer telemetry.
-
-    Returns:
-        Fully configured cosalette App ready to run.
-    """
-    app = cosalette.App(
-        name="gas2mqtt",
-        version=__version__,
-        description="Domestic gas meter reader via QMC5883L magnetometer",
-        settings_class=Gas2MqttSettings,
-    )
-
-    settings: Gas2MqttSettings = app.settings  # type: ignore[assignment]
-
-    # --- Adapter registration ---
-
-    app.adapter(MagnetometerPort, Qmc5883lAdapter, dry_run=FakeMagnetometer)
-    app.adapter(StateStoragePort, _make_storage_adapter, dry_run=NullStorage)
-
-    # --- Device registration ---
-
-    @app.device("gas_counter")
-    async def _gas_counter(ctx: cosalette.DeviceContext) -> None:
-        await gas_counter(ctx)
-
-    # Temperature: PT1 filter initialised via init= callback.
-    # cosalette DI provides settings to the init function automatically.
-    def _make_pt1(settings: Gas2MqttSettings) -> Pt1Filter:
-        return Pt1Filter(tau=settings.smoothing_tau, dt=settings.temperature_interval)
-
-    @app.telemetry(
-        "temperature",
-        interval=settings.temperature_interval,
-        publish=OnChange(threshold={"temperature": 0.05}),
-        init=_make_pt1,
-    )
-    async def _temperature(
-        magnetometer: MagnetometerPort,
-        settings: Gas2MqttSettings,
-        pt1: Pt1Filter,
-    ) -> dict[str, object]:
-        reading = magnetometer.read()
-        raw_celsius = (
-            settings.temp_scale * reading.temperature_raw + settings.temp_offset
-        )
-        return {"temperature": round(pt1.update(raw_celsius), 1)}
-
-    # Magnetometer: conditional telemetry (debug only).
-    if settings.enable_debug_device:
-
-        @app.telemetry("magnetometer", interval=settings.poll_interval)
-        async def _magnetometer(
-            magnetometer: MagnetometerPort,
-        ) -> dict[str, object]:
-            reading = magnetometer.read()
-            return {"bx": reading.bx, "by": reading.by, "bz": reading.bz}
-
-    return app
-
-
-app = create_app()
+app = cosalette.App(
+    name="gas2mqtt",
+    version=__version__,
+    description="Domestic gas meter reader via QMC5883L magnetometer",
+    settings_class=Gas2MqttSettings,
+)
 """Module-level app instance — entry point for the CLI."""
+
+settings: Gas2MqttSettings = app.settings  # type: ignore[assignment]
+
+# --- Adapter registration ---
+
+app.adapter(MagnetometerPort, Qmc5883lAdapter, dry_run=FakeMagnetometer)
+app.adapter(StateStoragePort, _make_storage_adapter, dry_run=NullStorage)
+
+# --- Device registration ---
+
+app.add_device("gas_counter", gas_counter)
+
+
+def _make_pt1(settings: Gas2MqttSettings) -> Pt1Filter:
+    """Create PT1 filter from settings for temperature smoothing."""
+    return Pt1Filter(tau=settings.smoothing_tau, dt=settings.temperature_interval)
+
+
+@app.telemetry(
+    "temperature",
+    interval=settings.temperature_interval,
+    publish=OnChange(threshold={"temperature": 0.05}),
+    init=_make_pt1,
+)
+async def _temperature(
+    magnetometer: MagnetometerPort,
+    settings: Gas2MqttSettings,
+    pt1: Pt1Filter,
+) -> dict[str, object]:
+    reading = magnetometer.read()
+    raw_celsius = settings.temp_scale * reading.temperature_raw + settings.temp_offset
+    return {"temperature": round(pt1.update(raw_celsius), 1)}
+
+
+@app.telemetry(
+    "magnetometer",
+    interval=settings.poll_interval,
+    enabled=settings.enable_debug_device,
+)
+async def _magnetometer(
+    magnetometer: MagnetometerPort,
+) -> dict[str, object]:
+    reading = magnetometer.read()
+    return {"bx": reading.bx, "by": reading.by, "bz": reading.bz}

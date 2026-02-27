@@ -1,14 +1,15 @@
 """Integration tests for gas2mqtt application wiring.
 
-Verifies that ``create_app()`` correctly wires all components, that
-adapter lifecycle methods (__aenter__/__aexit__) properly manage the
-magnetometer, and that device registration uses eager settings.
+Verifies that module-level declarations in ``main.py`` correctly wire
+all components, that adapter lifecycle methods (__aenter__/__aexit__)
+properly manage the magnetometer, and that device registration uses
+eager settings with ``enabled=`` for conditional registration.
 
 Test Techniques Used:
 - Specification-based: App configuration matches expectations
 - Integration: Handler factories exercised end-to-end with real domain objects
 - State Transition: Adapter __aenter__/__aexit__ lifecycle
-- Branch Coverage: Magnetometer conditional registration
+- Branch Coverage: Magnetometer conditional registration via enabled=
 - Error Guessing: __aexit__ closes adapter even on error
 """
 
@@ -21,7 +22,7 @@ import pytest
 
 from gas2mqtt.adapters.fake import FakeMagnetometer, NullStorage
 from gas2mqtt.adapters.json_storage import JsonFileStorage
-from gas2mqtt.main import _make_storage_adapter, create_app
+from gas2mqtt.main import _make_storage_adapter, app
 from gas2mqtt.ports import StateStoragePort
 from tests.fixtures.config import make_gas2mqtt_settings
 
@@ -32,16 +33,13 @@ from tests.fixtures.config import make_gas2mqtt_settings
 
 @pytest.mark.integration
 class TestAppCreation:
-    """Verify create_app() produces a properly configured App."""
+    """Verify module-level app is a properly configured App."""
 
     def test_creates_app_instance(self) -> None:
-        """create_app() returns a cosalette App.
+        """Module-level app is a cosalette App.
 
-        Technique: Specification-based — verifying factory contract.
+        Technique: Specification-based — verifying module-level wiring.
         """
-        # Act
-        app = create_app()
-
         # Assert
         assert isinstance(app, cosalette.App)
 
@@ -110,55 +108,62 @@ class TestTemperatureRegistration:
     """Verify temperature is registered as telemetry with PT1 filter."""
 
     def test_temperature_registered_as_telemetry(self) -> None:
-        """create_app() registers temperature as a telemetry device.
+        """Module-level app registers temperature as a telemetry device.
 
         Technique: Specification-based — verifying registration contract.
         """
-        # Act
-        app = create_app()
-
         # Assert
         telemetry_names = [t.name for t in app._telemetry]  # noqa: SLF001
         assert "temperature" in telemetry_names
 
 
 # ---------------------------------------------------------------------------
-# Debug magnetometer registration
+# Debug magnetometer registration (enabled= parameter)
 # ---------------------------------------------------------------------------
 
 
 @pytest.mark.integration
 class TestMagnetometerRegistration:
-    """Verify magnetometer conditional registration via eager settings."""
+    """Verify magnetometer conditional registration via enabled= parameter.
 
-    def test_registered_when_enabled(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """create_app() registers magnetometer when debug device is on.
+    The module-level app uses ``enabled=settings.enable_debug_device``
+    on the ``@app.telemetry("magnetometer", ...)`` decorator. Since the
+    default settings have ``enable_debug_device=False``, the magnetometer
+    is NOT registered in the singleton app.
 
-        Technique: Branch Coverage — verifying conditional registration
-        (True branch) via eager settings and env var override.
+    The ``_magnetometer`` handler function is still defined at module level,
+    so we can test it directly to verify correctness independent of wiring.
+    """
+
+    def test_noop_when_disabled_by_default(self) -> None:
+        """Default settings disable magnetometer registration.
+
+        Technique: Branch Coverage — verifying enabled=False path.
+        Default ``enable_debug_device`` is False, so the magnetometer
+        telemetry is skipped during module-level registration.
         """
-        # Arrange — set env var so eager settings picks up the override
-        monkeypatch.setenv("GAS2MQTT_ENABLE_DEBUG_DEVICE", "true")
-
-        # Act
-        app = create_app()
-
-        # Assert
-        telemetry_names = [t.name for t in app._telemetry]  # noqa: SLF001
-        assert "magnetometer" in telemetry_names
-
-    def test_noop_when_disabled(self) -> None:
-        """create_app() does not register magnetometer when debug is off.
-
-        Technique: Branch Coverage — verifying conditional registration
-        behavior (default settings have enable_debug_device=False).
-        """
-        # Act
-        app = create_app()
-
         # Assert
         telemetry_names = [t.name for t in app._telemetry]  # noqa: SLF001
         assert "magnetometer" not in telemetry_names
+
+    async def test_magnetometer_handler_returns_readings(self) -> None:
+        """_magnetometer handler returns correct reading dict.
+
+        Technique: Integration — exercise the handler directly with a
+        fake magnetometer to verify it works regardless of enabled= wiring.
+        """
+        # Arrange
+        from gas2mqtt.main import _magnetometer
+
+        mag = FakeMagnetometer()
+        async with mag:
+            # Act
+            result = await _magnetometer(mag)
+
+        # Assert
+        assert "bx" in result
+        assert "by" in result
+        assert "bz" in result
 
 
 # ---------------------------------------------------------------------------
@@ -201,9 +206,6 @@ class TestStorageAdapterWiring:
         assert isinstance(storage, JsonFileStorage)
 
     def test_storage_port_registered_in_app(self) -> None:
-        """create_app() registers StateStoragePort in the adapter registry."""
-        # Act
-        app = create_app()
-
+        """Module-level app registers StateStoragePort in the adapter registry."""
         # Assert
         assert StateStoragePort in app._adapters  # noqa: SLF001
