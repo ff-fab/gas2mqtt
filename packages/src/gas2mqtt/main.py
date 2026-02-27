@@ -1,14 +1,11 @@
 """gas2mqtt application entry point.
 
-Wires the cosalette App with all devices, adapters, and lifespan
-management.  The module-level ``app`` object is the entry point
-for the CLI: ``gas2mqtt`` runs ``app.run()``.
+Wires the cosalette App with all devices, adapters, and settings.
+The module-level ``app`` object is the entry point for the CLI:
+``gas2mqtt`` runs ``app.run()``.
 """
 
 from __future__ import annotations
-
-import contextlib
-from collections.abc import AsyncIterator
 
 import cosalette
 from cosalette import OnChange, Pt1Filter
@@ -20,22 +17,6 @@ from gas2mqtt.adapters.qmc5883l import Qmc5883lAdapter
 from gas2mqtt.devices.gas_counter import gas_counter
 from gas2mqtt.ports import MagnetometerPort, StateStoragePort
 from gas2mqtt.settings import Gas2MqttSettings
-
-
-@contextlib.asynccontextmanager
-async def lifespan(ctx: cosalette.AppContext) -> AsyncIterator[None]:
-    """Initialize and clean up the magnetometer I2C connection.
-
-    Opens the I2C bus and configures the QMC5883L registers on startup.
-    Closes the bus on shutdown.  For dry-run mode and tests, the
-    FakeMagnetometer's ``initialize()``/``close()`` are harmless no-ops.
-    """
-    magnetometer = ctx.adapter(MagnetometerPort)  # type: ignore[type-abstract]
-    magnetometer.initialize()
-    try:
-        yield
-    finally:
-        magnetometer.close()
 
 
 def _make_storage_adapter(
@@ -67,21 +48,13 @@ def create_app() -> cosalette.App:
         version=__version__,
         description="Domestic gas meter reader via QMC5883L magnetometer",
         settings_class=Gas2MqttSettings,
-        lifespan=lifespan,
     )
 
-    # Eager settings (cosalette 0.1.4) — available at registration time.
     settings: Gas2MqttSettings = app.settings  # type: ignore[assignment]
 
     # --- Adapter registration ---
 
-    def _make_magnetometer(settings: Gas2MqttSettings) -> Qmc5883lAdapter:
-        return Qmc5883lAdapter(
-            bus_number=settings.i2c_bus, address=settings.i2c_address
-        )
-
-    app.adapter(MagnetometerPort, _make_magnetometer, dry_run=FakeMagnetometer)
-
+    app.adapter(MagnetometerPort, Qmc5883lAdapter, dry_run=FakeMagnetometer)
     app.adapter(StateStoragePort, _make_storage_adapter, dry_run=NullStorage)
 
     # --- Device registration ---

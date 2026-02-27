@@ -7,6 +7,8 @@ The bz value can be controlled to simulate trigger events.
 from __future__ import annotations
 
 import copy
+from types import TracebackType
+from typing import Self
 
 from gas2mqtt.ports import MagneticReading
 
@@ -51,6 +53,20 @@ class FakeMagnetometer:
     def close(self) -> None:
         """Mark the fake sensor as closed."""
         self.closed = True
+
+    async def __aenter__(self) -> Self:
+        """Enter async context: initialize the fake sensor."""
+        self.initialize()
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
+        """Exit async context: close the fake sensor."""
+        self.close()
 
 
 class NullStorage:

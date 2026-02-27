@@ -1,15 +1,15 @@
 """Integration tests for gas2mqtt application wiring.
 
 Verifies that ``create_app()`` correctly wires all components, that
-the lifespan properly manages the magnetometer adapter lifecycle,
-and that device registration uses eager settings.
+adapter lifecycle methods (__aenter__/__aexit__) properly manage the
+magnetometer, and that device registration uses eager settings.
 
 Test Techniques Used:
 - Specification-based: App configuration matches expectations
 - Integration: Handler factories exercised end-to-end with real domain objects
-- State Transition: Lifespan startup/shutdown lifecycle
+- State Transition: Adapter __aenter__/__aexit__ lifecycle
 - Branch Coverage: Magnetometer conditional registration
-- Error Guessing: Lifespan closes adapter even on error
+- Error Guessing: __aexit__ closes adapter even on error
 """
 
 from __future__ import annotations
@@ -21,8 +21,8 @@ import pytest
 
 from gas2mqtt.adapters.fake import FakeMagnetometer, NullStorage
 from gas2mqtt.adapters.json_storage import JsonFileStorage
-from gas2mqtt.main import _make_storage_adapter, create_app, lifespan
-from gas2mqtt.ports import MagnetometerPort, StateStoragePort
+from gas2mqtt.main import _make_storage_adapter, create_app
+from gas2mqtt.ports import StateStoragePort
 from tests.fixtures.config import make_gas2mqtt_settings
 
 # ---------------------------------------------------------------------------
@@ -47,65 +47,53 @@ class TestAppCreation:
 
 
 # ---------------------------------------------------------------------------
-# Lifespan
+# Adapter lifecycle (__aenter__ / __aexit__)
 # ---------------------------------------------------------------------------
 
 
 @pytest.mark.integration
-class TestLifespan:
-    """Verify lifespan initializes and cleans up the magnetometer."""
+class TestAdapterLifecycle:
+    """Verify adapter __aenter__/__aexit__ manages magnetometer lifecycle."""
 
-    async def test_initializes_magnetometer(self) -> None:
-        """Lifespan calls magnetometer.initialize() on startup.
+    async def test_aenter_initializes_magnetometer(self) -> None:
+        """__aenter__ calls initialize() on the adapter.
 
         Technique: State Transition — verifying startup lifecycle.
         """
         # Arrange
         mag = FakeMagnetometer()
-        ctx = cosalette.AppContext(
-            settings=make_gas2mqtt_settings(),
-            adapters={MagnetometerPort: mag},
-        )
 
         # Act
-        async with lifespan(ctx):
+        async with mag:
             # Assert
             assert mag.initialized is True
 
-    async def test_closes_magnetometer(self) -> None:
-        """Lifespan calls magnetometer.close() on shutdown.
+    async def test_aexit_closes_magnetometer(self) -> None:
+        """__aexit__ calls close() on the adapter.
 
         Technique: State Transition — verifying shutdown lifecycle.
         """
         # Arrange
         mag = FakeMagnetometer()
-        ctx = cosalette.AppContext(
-            settings=make_gas2mqtt_settings(),
-            adapters={MagnetometerPort: mag},
-        )
 
         # Act
-        async with lifespan(ctx):
+        async with mag:
             pass
 
         # Assert
         assert mag.closed is True
 
-    async def test_closes_on_error(self) -> None:
-        """Lifespan closes magnetometer even if the body raises.
+    async def test_aexit_closes_on_error(self) -> None:
+        """__aexit__ closes adapter even if the body raises.
 
         Technique: Error Guessing — cleanup must happen on exceptions.
         """
         # Arrange
         mag = FakeMagnetometer()
-        ctx = cosalette.AppContext(
-            settings=make_gas2mqtt_settings(),
-            adapters={MagnetometerPort: mag},
-        )
 
         # Act
         with pytest.raises(RuntimeError, match="boom"):
-            async with lifespan(ctx):
+            async with mag:
                 raise RuntimeError("boom")
 
         # Assert

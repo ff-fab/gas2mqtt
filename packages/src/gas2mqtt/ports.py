@@ -9,7 +9,8 @@ at runtime by cosalette's adapter registry.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Protocol
+from types import TracebackType
+from typing import Protocol, Self
 
 
 @dataclass(frozen=True, slots=True)
@@ -54,16 +55,34 @@ class MagnetometerPort(Protocol):
     def initialize(self) -> None:
         """Initialize the sensor with configuration registers.
 
-        Must be called before the first read(). Typically called
-        during application lifespan startup.
+        Must be called before the first read(). Called automatically
+        by ``__aenter__`` during adapter lifecycle entry.
         """
         ...
 
     def close(self) -> None:
         """Release hardware resources (close I2C bus).
 
-        Called during application lifespan shutdown.
+        Called automatically by ``__aexit__`` during adapter
+        lifecycle teardown.
         """
+        ...
+
+    async def __aenter__(self) -> Self:
+        """Enter async context: initialize the sensor.
+
+        Enables cosalette 0.1.5 adapter lifecycle management via
+        ``AsyncExitStack``.
+        """
+        ...
+
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
+        """Exit async context: release hardware resources."""
         ...
 
 
