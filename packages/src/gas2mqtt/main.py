@@ -35,12 +35,11 @@ app = cosalette.App(
     description="Domestic gas meter reader via QMC5883L magnetometer",
     settings_class=Gas2MqttSettings,
     store=_store,
+    adapters={
+        MagnetometerPort: (Qmc5883lAdapter, FakeMagnetometer),
+    },
 )
 """Module-level app instance — entry point for the CLI."""
-
-# --- Adapter registration ---
-
-app.adapter(MagnetometerPort, Qmc5883lAdapter, dry_run=FakeMagnetometer)
 
 # --- Device registration ---
 

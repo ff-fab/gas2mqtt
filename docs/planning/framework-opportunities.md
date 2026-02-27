@@ -33,12 +33,15 @@ library like `aiohttp`.
 
 ## Event-Driven Telemetry
 
-!!! note "Partially realised (cosalette 0.1.2)"
+!!! note "Partially realised (cosalette 0.1.2+)"
     Temperature and magnetometer have been migrated from `@app.device` to
     `@app.telemetry`.  Temperature uses `OnChange(threshold={"temperature": 0.05})`
     so readings are only published when the EWMA-filtered value changes by more than
     0.05 °C.  Magnetometer is conditionally registered as telemetry when
     `enable_debug_device=True`.
+
+    State persistence was migrated to cosalette's built-in `Store`/`DeviceStore`
+    system in 0.1.5, replacing the custom `StateStoragePort`/`JsonFileStorage` layer.
 
 The gas counter still uses `@app.device()` with a manual polling loop because its
 publish logic is event-driven (Schmitt trigger state changes), which doesn't fit the

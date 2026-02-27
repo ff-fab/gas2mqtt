@@ -207,46 +207,54 @@ meaningfully.
 
 ## Priority Summary
 
-| #   | Idea                          | Layer     | Impact     | Effort | Priority   |
-| --- | ----------------------------- | --------- | ---------- | ------ | ---------- |
-| 1   | Adapter lifecycle protocol    | Framework | **High**   | Medium | **HIGH**   |
-| 2   | Settings-aware adapter DI     | Framework | **High**   | Medium | **HIGH**   |
-| 3   | Direct function registration  | Framework | **Medium** | Low    | **MEDIUM** |
-| 4   | Conditional `enabled=` param  | Framework | **Medium** | Low    | **MEDIUM** |
-| 5   | Declarative adapter block     | Framework | **Low**    | Medium | **LOW**    |
-| 6   | Event-driven telemetry        | Framework | **Low**    | High   | **LOW**    |
+| #   | Idea                          | Layer     | Impact     | Effort | Priority   | Status                          |
+| --- | ----------------------------- | --------- | ---------- | ------ | ---------- | ------------------------------- |
+| 1   | Adapter lifecycle protocol    | Framework | **High**   | Medium | **HIGH**   | ✅ Done (cosalette 0.1.5)        |
+| 2   | Settings-aware adapter DI     | Framework | **High**   | Medium | **HIGH**   | ✅ Done (cosalette 0.1.5)        |
+| 3   | Direct function registration  | Framework | **Medium** | Low    | **MEDIUM** | ✅ Done (cosalette 0.1.5)        |
+| 4   | Conditional `enabled=` param  | Framework | **Medium** | Low    | **MEDIUM** | ✅ Done (cosalette 0.1.5)        |
+| 5   | Declarative adapter block     | Framework | **Low**    | Medium | **LOW**    | ✅ Done (cosalette 0.1.5)        |
+| 6   | Event-driven telemetry        | Framework | **Low**    | High   | **LOW**    | N/A — gas counter is irreducibly stateful |
 
 ---
 
-## Vision: `main.py` After Improvements #1–#4
+## Realised: `main.py` After cosalette 0.1.5 Adoption
+
+All improvements #1–#5 landed in cosalette 0.1.5. The vision is now reality:
 
 ```python
 """gas2mqtt application entry point."""
-from gas2mqtt import __version__
-from gas2mqtt.adapters.fake import FakeMagnetometer, NullStorage
-from gas2mqtt.adapters.json_storage import JsonFileStorage
-from gas2mqtt.adapters.qmc5883l import Qmc5883lAdapter
-from gas2mqtt.devices.gas_counter import gas_counter
-from gas2mqtt.ports import MagnetometerPort, StateStoragePort
-from gas2mqtt.settings import Gas2MqttSettings
+from __future__ import annotations
 
 import cosalette
 from cosalette import OnChange, Pt1Filter
+
+from gas2mqtt import __version__
+from gas2mqtt.adapters.fake import FakeMagnetometer
+from gas2mqtt.adapters.qmc5883l import Qmc5883lAdapter
+from gas2mqtt.devices.gas_counter import gas_counter
+from gas2mqtt.ports import MagnetometerPort
+from gas2mqtt.settings import Gas2MqttSettings
+
+settings = Gas2MqttSettings()
+
+_store: cosalette.Store = (
+    cosalette.JsonFileStore(settings.state_file)
+    if settings.state_file is not None
+    else cosalette.NullStore()
+)
 
 app = cosalette.App(
     name="gas2mqtt",
     version=__version__,
     description="Domestic gas meter reader via QMC5883L magnetometer",
     settings_class=Gas2MqttSettings,
+    store=_store,
+    adapters={
+        MagnetometerPort: (Qmc5883lAdapter, FakeMagnetometer),
+    },
 )
 
-settings: Gas2MqttSettings = app.settings  # type: ignore[assignment]
-
-# Adapters (lifecycle auto-managed by framework)
-app.adapter(MagnetometerPort, Qmc5883lAdapter, dry_run=FakeMagnetometer)
-app.adapter(StateStoragePort, _make_storage_adapter, dry_run=NullStorage)
-
-# Devices
 app.add_device("gas_counter", gas_counter)
 
 def _make_pt1(settings: Gas2MqttSettings) -> Pt1Filter:
@@ -256,18 +264,24 @@ def _make_pt1(settings: Gas2MqttSettings) -> Pt1Filter:
                interval=settings.temperature_interval,
                publish=OnChange(threshold={"temperature": 0.05}),
                init=_make_pt1)
-async def _temperature(mag: MagnetometerPort, s: Gas2MqttSettings, pt1: Pt1Filter):
-    raw = s.temp_scale * mag.read().temperature_raw + s.temp_offset
-    return {"temperature": round(pt1.update(raw), 1)}
+async def _temperature(
+    magnetometer: MagnetometerPort,
+    settings: Gas2MqttSettings,
+    pt1: Pt1Filter,
+) -> dict[str, object]:
+    reading = magnetometer.read()
+    raw_celsius = settings.temp_scale * reading.temperature_raw + settings.temp_offset
+    return {"temperature": round(pt1.update(raw_celsius), 1)}
 
 @app.telemetry("magnetometer",
                interval=settings.poll_interval,
                enabled=settings.enable_debug_device)
-async def _magnetometer(mag: MagnetometerPort):
-    r = mag.read()
-    return {"bx": r.bx, "by": r.by, "bz": r.bz}
+async def _magnetometer(magnetometer: MagnetometerPort) -> dict[str, object]:
+    reading = magnetometer.read()
+    return {"bx": reading.bx, "by": reading.by, "bz": reading.bz}
 ```
 
-~40 lines vs the current ~128 — a **~70% reduction**, with zero `create_app()`
-function, no lifespan hook needed, no adapter factory functions, and every device
+**~85 lines** down from the original **~128** — a **~34% reduction**, with zero
+`create_app()` function, no lifespan hook, no adapter factory functions, declarative
+adapter registration, framework-managed persistence via `store=`, and every device
 visible at the top level.
