@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif">
+  <defs>
+    <style>
+      .label { font-size: 11px; fill: #333; }
+      .pin-label { font-size: 9px; fill: #fff; font-weight: 600; }
+      .pin-num { font-size: 8px; fill: #888; }
+      .board-label { font-size: 14px; font-weight: 700; fill: #fff; }
+      .sub-label { font-size: 10px; fill: #ccc; }
+      .wire-label { font-size: 10px; font-weight: 600; }
+      .legend-text { font-size: 10px; fill: #555; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="720" height="420" rx="8" fill="#fafafa" stroke="#e0e0e0" stroke-width="1"/>
+
+  <!-- Title -->
+  <text x="360" y="30" text-anchor="middle" font-size="16" font-weight="700" fill="#333">Raspberry Pi ↔ QMC5883L Wiring (I2C)</text>
+
+  <!-- ===== Raspberry Pi Board ===== -->
+  <rect x="40" y="60" width="240" height="300" rx="10" fill="#2d5016" stroke="#1a3a0a" stroke-width="2"/>
+  <text x="160" y="88" text-anchor="middle" class="board-label">Raspberry Pi</text>
+  <text x="160" y="104" text-anchor="middle" class="sub-label">GPIO Header (selected pins)</text>
+
+  <!-- GPIO pin rows — left column (odd pins), right column (even pins) -->
+  <!-- Pin 1: 3.3V -->
+  <rect x="70" y="130" width="80" height="28" rx="4" fill="#e63946"/>
+  <text x="110" y="148" text-anchor="middle" class="pin-label">3.3V</text>
+  <text x="60" y="148" text-anchor="end" class="pin-num">1</text>
+
+  <!-- Pin 2: 5V -->
+  <rect x="170" y="130" width="80" height="28" rx="4" fill="#666"/>
+  <text x="210" y="148" text-anchor="middle" class="pin-label">5V</text>
+  <text x="260" y="148" text-anchor="start" class="pin-num">2</text>
+
+  <!-- Pin 3: GPIO 2 (SDA) -->
+  <rect x="70" y="170" width="80" height="28" rx="4" fill="#457b9d"/>
+  <text x="110" y="188" text-anchor="middle" class="pin-label">SDA (GPIO2)</text>
+  <text x="60" y="188" text-anchor="end" class="pin-num">3</text>
+
+  <!-- Pin 4: 5V -->
+  <rect x="170" y="170" width="80" height="28" rx="4" fill="#666"/>
+  <text x="210" y="188" text-anchor="middle" class="pin-label">5V</text>
+  <text x="260" y="188" text-anchor="start" class="pin-num">4</text>
+
+  <!-- Pin 5: GPIO 3 (SCL) -->
+  <rect x="70" y="210" width="80" height="28" rx="4" fill="#e9c46a"/>
+  <text x="110" y="228" text-anchor="middle" class="pin-label">SCL (GPIO3)</text>
+  <text x="60" y="228" text-anchor="end" class="pin-num">5</text>
+
+  <!-- Pin 6: GND -->
+  <rect x="170" y="210" width="80" height="28" rx="4" fill="#1d3557"/>
+  <text x="210" y="228" text-anchor="middle" class="pin-label">GND</text>
+  <text x="260" y="228" text-anchor="start" class="pin-num">6</text>
+
+  <!-- Remaining pins hint -->
+  <text x="160" y="270" text-anchor="middle" font-size="11" fill="#8fbc8f">· · ·  (pins 7–40)  · · ·</text>
+
+  <!-- USB/Ethernet hint -->
+  <rect x="100" y="300" width="120" height="40" rx="6" fill="#1a3a0a" stroke="#0d1f05" stroke-width="1"/>
+  <text x="160" y="324" text-anchor="middle" font-size="9" fill="#6a9f4a">USB / Ethernet</text>
+
+  <!-- ===== QMC5883L Breakout Board ===== -->
+  <rect x="460" y="100" width="210" height="220" rx="10" fill="#2b2b3d" stroke="#1a1a2e" stroke-width="2"/>
+  <text x="565" y="130" text-anchor="middle" class="board-label">QMC5883L</text>
+  <text x="565" y="146" text-anchor="middle" class="sub-label">Magnetometer Breakout</text>
+
+  <!-- Chip representation -->
+  <rect x="520" y="160" width="90" height="50" rx="4" fill="#3d3d5c" stroke="#555" stroke-width="1"/>
+  <text x="565" y="182" text-anchor="middle" font-size="9" fill="#aaa">QMC5883L</text>
+  <text x="565" y="196" text-anchor="middle" font-size="8" fill="#777">I2C: 0x0D</text>
+
+  <!-- Sensor pins -->
+  <!-- VCC -->
+  <rect x="480" y="225" width="60" height="24" rx="4" fill="#e63946"/>
+  <text x="510" y="241" text-anchor="middle" class="pin-label">VCC</text>
+
+  <!-- GND -->
+  <rect x="480" y="258" width="60" height="24" rx="4" fill="#1d3557"/>
+  <text x="510" y="274" text-anchor="middle" class="pin-label">GND</text>
+
+  <!-- SDA -->
+  <rect x="560" y="225" width="60" height="24" rx="4" fill="#457b9d"/>
+  <text x="590" y="241" text-anchor="middle" class="pin-label">SDA</text>
+
+  <!-- SCL -->
+  <rect x="560" y="258" width="60" height="24" rx="4" fill="#e9c46a"/>
+  <text x="590" y="274" text-anchor="middle" class="pin-label">SCL</text>
+
+  <!-- ===== Wires ===== -->
+  <!-- VCC: Pin 1 (3.3V) → VCC -->
+  <path d="M 150 144 L 310 144 Q 330 144 330 160 L 330 237 L 480 237"
+        fill="none" stroke="#e63946" stroke-width="2.5" stroke-linecap="round"/>
+  <text x="380" y="230" class="wire-label" fill="#e63946">3.3V (power)</text>
+
+  <!-- GND: Pin 6 → GND -->
+  <path d="M 250 224 L 310 224 Q 340 224 340 248 L 340 270 L 480 270"
+        fill="none" stroke="#1d3557" stroke-width="2.5" stroke-linecap="round"/>
+  <text x="380" y="286" class="wire-label" fill="#1d3557">GND (ground)</text>
+
+  <!-- SDA: Pin 3 → SDA -->
+  <path d="M 150 184 L 300 184 Q 320 184 320 200 L 320 310 Q 320 330 340 330 L 620 330 Q 640 330 640 310 L 640 237 L 620 237"
+        fill="none" stroke="#457b9d" stroke-width="2.5" stroke-linecap="round"/>
+  <text x="470" y="345" class="wire-label" fill="#457b9d">SDA (data)</text>
+
+  <!-- SCL: Pin 5 → SCL -->
+  <path d="M 150 224 L 290 224 Q 310 224 310 244 L 310 355 Q 310 375 330 375 L 630 375 Q 655 375 655 355 L 655 270 L 620 270"
+        fill="none" stroke="#b8960c" stroke-width="2.5" stroke-linecap="round"/>
+  <text x="470" y="390" class="wire-label" fill="#b8960c">SCL (clock)</text>
+
+  <!-- ===== Legend ===== -->
+  <rect x="40" y="390" width="640" height="24" rx="4" fill="none"/>
+  <circle cx="60" cy="403" r="5" fill="#e63946"/>
+  <text x="72" y="407" class="legend-text">3.3V Power</text>
+  <circle cx="170" cy="403" r="5" fill="#1d3557"/>
+  <text x="182" y="407" class="legend-text">Ground</text>
+  <circle cx="260" cy="403" r="5" fill="#457b9d"/>
+  <text x="272" y="407" class="legend-text">I2C Data (SDA)</text>
+  <circle cx="390" cy="403" r="5" fill="#e9c46a"/>
+  <text x="402" y="407" class="legend-text">I2C Clock (SCL)</text>
+  <text x="540" y="407" class="legend-text" font-style="italic">Only 4 wires needed — no pull-ups required (breakout has them)</text>
+</svg>
