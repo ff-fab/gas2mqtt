@@ -2,7 +2,7 @@
   <defs>
     <style>
       .pin-label { font-size: 8.5px; fill: #fff; font-weight: 600; }
-      .pin-num { font-size: 8px; fill: #999; }
+      .pin-num { font-size: 8px; fill: #ddd; }
       .board-label { font-size: 16px; font-weight: 700; fill: #fff; }
       .sub-label { font-size: 11px; fill: #ccc; }
       .wire-label { font-size: 11px; font-weight: 600; }
@@ -225,15 +225,15 @@
   <!-- ===== Wires (drawn AFTER boards so they appear on top) ===== -->
 
   <!-- 3.3V: Pin 1 → left → up → right → down → VCC -->
-  <path d="M 75 165 L 24 165 L 24 74 L 532 74 L 532 302 L 565 302"
+  <path d="M 75 165 L 24 165 L 24 82 L 532 82 L 532 302 L 565 302"
         fill="none" stroke="#e63946" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
 
-  <!-- SDA: Pin 3 → left → up → right → down → SDA -->
-  <path d="M 75 187 L 16 187 L 16 62 L 652 62 L 652 302 L 685 302"
+  <!-- SDA: Pin 3 → left → up → right → down to right → SDA -->
+  <path d="M 75 187 L 16 187 L 16 62 L 790 62 L 790 302 L 745 302"
         fill="none" stroke="#457b9d" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
 
-  <!-- SCL: Pin 5 → left → up → right → down → SCL -->
-  <path d="M 75 209 L 8 209 L 8 50 L 662 50 L 662 335 L 685 335"
+  <!-- SCL: Pin 5 → left → up → right → down to right → SCL -->
+  <path d="M 75 209 L 8 209 L 8 42 L 800 42 L 800 335 L 745 335"
         fill="none" stroke="#b8960c" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
 
   <!-- GND: Pin 6 → right → down → right → GND -->
@@ -241,9 +241,9 @@
         fill="none" stroke="#1d3557" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
 
   <!-- Wire labels on horizontal runs -->
-  <text x="300" y="47" text-anchor="middle" class="wire-label" fill="#b8960c">SCL (clock)</text>
+  <text x="300" y="39" text-anchor="middle" class="wire-label" fill="#b8960c">SCL (clock)</text>
   <text x="300" y="59" text-anchor="middle" class="wire-label" fill="#457b9d">SDA (data)</text>
-  <text x="300" y="71" text-anchor="middle" class="wire-label" fill="#e63946">3.3V (power)</text>
+  <text x="300" y="79" text-anchor="middle" class="wire-label" fill="#e63946">3.3V (power)</text>
   <text x="420" y="202" text-anchor="middle" class="wire-label" fill="#1d3557">GND (ground)</text>
 
   <!-- ===== Legend ===== -->
