@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 660" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif">
   <defs>
     <style>
-      .pin-label { font-size: 7.5px; fill: #fff; font-weight: 600; }
-      .pin-num { font-size: 7px; fill: #999; }
-      .board-label { font-size: 14px; font-weight: 700; fill: #fff; }
-      .sub-label { font-size: 10px; fill: #ccc; }
-      .wire-label { font-size: 9px; font-weight: 600; }
-      .legend-text { font-size: 10px; fill: #555; }
+      .pin-label { font-size: 8.5px; fill: #fff; font-weight: 600; }
+      .pin-num { font-size: 8px; fill: #999; }
+      .board-label { font-size: 16px; font-weight: 700; fill: #fff; }
+      .sub-label { font-size: 11px; fill: #ccc; }
+      .wire-label { font-size: 11px; font-weight: 600; }
+      .legend-text { font-size: 11px; fill: #555; }
       .pin-3v3 { fill: #e63946; }
       .pin-5v { fill: #9d4600; }
       .pin-gnd { fill: #1d3557; }
@@ -24,35 +24,7 @@
   <rect width="820" height="660" rx="8" fill="#fafafa" stroke="#e0e0e0" stroke-width="1"/>
 
   <!-- Title -->
-  <text x="410" y="28" text-anchor="middle" font-size="16" font-weight="700" fill="#333">Raspberry Pi ↔ QMC5883L Wiring (I2C)</text>
-
-  <!-- ===== Wires (drawn first so boards overlay endpoints) ===== -->
-
-  <!-- 3.3V: Pin 1 → left → up → right → down → VCC -->
-  <!-- (75,165) → (24,165) → (24,74) → (532,74) → (532,302) → (565,302) -->
-  <path d="M 75 165 L 24 165 L 24 74 L 532 74 L 532 302 L 565 302"
-        fill="none" stroke="#e63946" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
-
-  <!-- SDA: Pin 3 → left → up → right → down → SDA -->
-  <!-- (75,187) → (16,187) → (16,62) → (652,62) → (652,302) → (685,302) -->
-  <path d="M 75 187 L 16 187 L 16 62 L 652 62 L 652 302 L 685 302"
-        fill="none" stroke="#457b9d" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
-
-  <!-- SCL: Pin 5 → left → up → right → down → SCL -->
-  <!-- (75,209) → (8,209) → (8,50) → (662,50) → (662,335) → (685,335) -->
-  <path d="M 75 209 L 8 209 L 8 50 L 662 50 L 662 335 L 685 335"
-        fill="none" stroke="#b8960c" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
-
-  <!-- GND: Pin 6 → right → down → right → GND -->
-  <!-- (285,209) → (522,209) → (522,335) → (565,335) -->
-  <path d="M 285 209 L 522 209 L 522 335 L 565 335"
-        fill="none" stroke="#1d3557" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
-
-  <!-- Wire labels on horizontal runs -->
-  <text x="300" y="47" text-anchor="middle" class="wire-label" fill="#b8960c">SCL (clock)</text>
-  <text x="300" y="59" text-anchor="middle" class="wire-label" fill="#457b9d">SDA (data)</text>
-  <text x="300" y="71" text-anchor="middle" class="wire-label" fill="#e63946">3.3V (power)</text>
-  <text x="420" y="202" text-anchor="middle" class="wire-label" fill="#1d3557">GND (ground)</text>
+  <text x="410" y="30" text-anchor="middle" font-size="18" font-weight="700" fill="#333">Raspberry Pi ↔ QMC5883L Wiring (I2C)</text>
 
   <!-- ===== Raspberry Pi Board ===== -->
   <rect x="30" y="100" width="310" height="520" rx="10" fill="#2d5016" stroke="#1a3a0a" stroke-width="2"/>
@@ -221,7 +193,7 @@
 
   <!-- USB/Ethernet hint -->
   <rect x="115" y="597" width="130" height="18" rx="6" fill="#1a3a0a" stroke="#0d1f05" stroke-width="1"/>
-  <text x="180" y="610" text-anchor="middle" font-size="8" fill="#6a9f4a">USB / Ethernet</text>
+  <text x="180" y="610" text-anchor="middle" font-size="9" fill="#6a9f4a">USB / Ethernet</text>
 
   <!-- ===== QMC5883L Breakout Board ===== -->
   <rect x="540" y="155" width="230" height="240" rx="10" fill="#2b2b3d" stroke="#1a1a2e" stroke-width="2"/>
@@ -230,8 +202,8 @@
 
   <!-- Chip representation -->
   <rect x="610" y="220" width="90" height="50" rx="4" fill="#3d3d5c" stroke="#555" stroke-width="1"/>
-  <text x="655" y="242" text-anchor="middle" font-size="9" fill="#aaa">QMC5883L</text>
-  <text x="655" y="256" text-anchor="middle" font-size="8" fill="#777">I2C: 0x0D</text>
+  <text x="655" y="242" text-anchor="middle" font-size="10" fill="#aaa">QMC5883L</text>
+  <text x="655" y="256" text-anchor="middle" font-size="9" fill="#777">I2C: 0x0D</text>
 
   <!-- Sensor pins -->
   <rect x="565" y="290" width="60" height="24" rx="4" class="pin-3v3"/>
@@ -247,12 +219,36 @@
   <text x="715" y="339" text-anchor="middle" class="pin-label">SCL</text>
 
   <!-- Note about pull-ups -->
-  <text x="655" y="373" text-anchor="middle" font-size="8.5" fill="#aaa" font-style="italic">Built-in pull-up resistors</text>
-  <text x="655" y="385" text-anchor="middle" font-size="8.5" fill="#aaa" font-style="italic">No external pull-ups needed</text>
+  <text x="655" y="373" text-anchor="middle" font-size="9.5" fill="#aaa" font-style="italic">Built-in pull-up resistors</text>
+  <text x="655" y="387" text-anchor="middle" font-size="9.5" fill="#aaa" font-style="italic">No external pull-ups needed</text>
+
+  <!-- ===== Wires (drawn AFTER boards so they appear on top) ===== -->
+
+  <!-- 3.3V: Pin 1 → left → up → right → down → VCC -->
+  <path d="M 75 165 L 24 165 L 24 74 L 532 74 L 532 302 L 565 302"
+        fill="none" stroke="#e63946" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+
+  <!-- SDA: Pin 3 → left → up → right → down → SDA -->
+  <path d="M 75 187 L 16 187 L 16 62 L 652 62 L 652 302 L 685 302"
+        fill="none" stroke="#457b9d" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+
+  <!-- SCL: Pin 5 → left → up → right → down → SCL -->
+  <path d="M 75 209 L 8 209 L 8 50 L 662 50 L 662 335 L 685 335"
+        fill="none" stroke="#b8960c" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+
+  <!-- GND: Pin 6 → right → down → right → GND -->
+  <path d="M 285 209 L 522 209 L 522 335 L 565 335"
+        fill="none" stroke="#1d3557" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+
+  <!-- Wire labels on horizontal runs -->
+  <text x="300" y="47" text-anchor="middle" class="wire-label" fill="#b8960c">SCL (clock)</text>
+  <text x="300" y="59" text-anchor="middle" class="wire-label" fill="#457b9d">SDA (data)</text>
+  <text x="300" y="71" text-anchor="middle" class="wire-label" fill="#e63946">3.3V (power)</text>
+  <text x="420" y="202" text-anchor="middle" class="wire-label" fill="#1d3557">GND (ground)</text>
 
   <!-- ===== Legend ===== -->
   <rect x="30" y="630" width="760" height="24" rx="6" fill="#f0f0f0" stroke="#ddd" stroke-width="1"/>
-  <text x="45" y="646" font-size="9" font-weight="600" fill="#333">Pin types:</text>
+  <text x="45" y="647" font-size="10" font-weight="600" fill="#333">Pin types:</text>
 
   <rect x="110" y="637" width="12" height="12" rx="2" class="pin-3v3"/>
   <text x="127" y="647" class="legend-text">3.3V</text>
