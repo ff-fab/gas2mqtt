@@ -23,7 +23,7 @@ Connect the QMC5883L to the Raspberry Pi I2C pins:
 | SDA      | GPIO 2 (pin 3)  |
 | SCL      | GPIO 3 (pin 5)  |
 
-<figure markdown="span">
+<figure markdown>
   ![Raspberry Pi to QMC5883L wiring diagram](assets/images/rpi-qmc5883l-wiring.svg){ width="680" }
   <figcaption>Four-wire I2C connection — no external pull-up resistors needed (the breakout board includes them).</figcaption>
 </figure>

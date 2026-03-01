@@ -1,4 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 660" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif">
+  <title>Raspberry Pi to QMC5883L wiring diagram</title>
+  <desc>Wiring diagram showing the 4-wire I2C connection between a Raspberry Pi 40-pin GPIO header and a QMC5883L magnetometer breakout board: 3.3V (pin 1), SDA (pin 3), SCL (pin 5), and GND (pin 6).</desc>
   <defs>
     <style>
       .pin-label { font-size: 8.5px; fill: #fff; font-weight: 600; }
