@@ -2,7 +2,7 @@
   <defs>
     <style>
       .pin-label { font-size: 8.5px; fill: #fff; font-weight: 600; }
-      .pin-num { font-size: 8px; fill: #ddd; }
+      .pin-num { font-size: 9.5px; fill: #ddd; }
       .board-label { font-size: 16px; font-weight: 700; fill: #fff; }
       .sub-label { font-size: 11px; fill: #ccc; }
       .wire-label { font-size: 11px; font-weight: 600; }
@@ -24,7 +24,7 @@
   <rect width="820" height="660" rx="8" fill="#fafafa" stroke="#e0e0e0" stroke-width="1"/>
 
   <!-- Title -->
-  <text x="410" y="30" text-anchor="middle" font-size="18" font-weight="700" fill="#333">Raspberry Pi ↔ QMC5883L Wiring (I2C)</text>
+  <text x="410" y="22" text-anchor="middle" font-size="18" font-weight="700" fill="#333">Raspberry Pi ↔ QMC5883L Wiring (I2C)</text>
 
   <!-- ===== Raspberry Pi Board ===== -->
   <rect x="30" y="100" width="310" height="520" rx="10" fill="#2d5016" stroke="#1a3a0a" stroke-width="2"/>
@@ -203,7 +203,7 @@
   <!-- Chip representation -->
   <rect x="610" y="220" width="90" height="50" rx="4" fill="#3d3d5c" stroke="#555" stroke-width="1"/>
   <text x="655" y="242" text-anchor="middle" font-size="10" fill="#aaa">QMC5883L</text>
-  <text x="655" y="256" text-anchor="middle" font-size="9" fill="#777">I2C: 0x0D</text>
+  <text x="655" y="256" text-anchor="middle" font-size="9" fill="#bbb">I2C: 0x0D</text>
 
   <!-- Sensor pins -->
   <rect x="565" y="290" width="60" height="24" rx="4" class="pin-3v3"/>
@@ -219,8 +219,8 @@
   <text x="715" y="339" text-anchor="middle" class="pin-label">SCL</text>
 
   <!-- Note about pull-ups -->
-  <text x="655" y="373" text-anchor="middle" font-size="9.5" fill="#aaa" font-style="italic">Built-in pull-up resistors</text>
-  <text x="655" y="387" text-anchor="middle" font-size="9.5" fill="#aaa" font-style="italic">No external pull-ups needed</text>
+  <text x="655" y="373" text-anchor="middle" font-size="11" fill="#aaa" font-style="italic">Built-in pull-up resistors</text>
+  <text x="655" y="389" text-anchor="middle" font-size="11" fill="#aaa" font-style="italic">No external pull-ups needed</text>
 
   <!-- ===== Wires (drawn AFTER boards so they appear on top) ===== -->
 
@@ -248,7 +248,7 @@
 
   <!-- ===== Legend ===== -->
   <rect x="30" y="630" width="760" height="24" rx="6" fill="#f0f0f0" stroke="#ddd" stroke-width="1"/>
-  <text x="45" y="647" font-size="10" font-weight="600" fill="#333">Pin types:</text>
+  <text x="45" y="647" font-size="11" font-weight="600" fill="#333">Pin types:</text>
 
   <rect x="110" y="637" width="12" height="12" rx="2" class="pin-3v3"/>
   <text x="127" y="647" class="legend-text">3.3V</text>
