@@ -234,3 +234,4 @@ legacy/
 .beads/dolt/dolt-server.activity
 .beads/dolt/dolt-server.log
 .beads/dolt/dolt-monitor.pid
+results-unit.xml
