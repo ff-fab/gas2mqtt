@@ -80,7 +80,7 @@ install_bd() {
         if curl -fsSL "$url" -o "/tmp/${tarball}" \
             && tar -xzf "/tmp/${tarball}" -C /tmp \
             && { install -m 755 /tmp/bd /usr/local/bin/bd 2>/dev/null \
-                || install -m 755 /tmp/bd "$HOME/.local/bin/bd"; }; then
+                || { mkdir -p "$HOME/.local/bin" && install -m 755 /tmp/bd "$HOME/.local/bin/bd"; }; }; then
             rm -f "/tmp/${tarball}" /tmp/bd
             return 0
         fi
