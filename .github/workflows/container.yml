@@ -3,10 +3,10 @@
 # Triggered when Release Please publishes a GitHub Release (vX.Y.Z tag).
 # Produces versioned tags on ghcr.io/ff-fab/gas2mqtt:
 #
-#   ghcr.io/ff-fab/gas2mqtt:v1.2.3   exact release tag
-#   ghcr.io/ff-fab/gas2mqtt:v1.2     minor floating tag
-#   ghcr.io/ff-fab/gas2mqtt:v1       major floating tag
-#   ghcr.io/ff-fab/gas2mqtt:latest   latest stable release
+#   ghcr.io/ff-fab/gas2mqtt:1.2.3    exact release tag
+#   ghcr.io/ff-fab/gas2mqtt:1.2      minor floating tag
+#   ghcr.io/ff-fab/gas2mqtt:1        major floating tag
+#   ghcr.io/ff-fab/gas2mqtt:latest   latest stable release (auto, non-pre-release only)
 #
 # Multi-arch: linux/amd64 (x86 servers) + linux/arm64 + linux/arm/v7 (Raspberry Pi).
 
@@ -15,6 +15,7 @@ name: Container
 on:
   release:
     types: [published]
+  workflow_dispatch: # Manual trigger for ad-hoc rebuilds (e.g. base image patches)
 
 permissions:
   contents: read

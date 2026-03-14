@@ -42,8 +42,9 @@ Connect the QMC5883L to the Raspberry Pi I2C pins:
     image is published to the GitHub Container Registry on every release.
 
     ```bash
-    # Download the Compose file and configuration template
+    # Download the Compose file, Mosquitto config, and configuration template
     curl -fsSL https://raw.githubusercontent.com/ff-fab/gas2mqtt/main/docker-compose.yml -o docker-compose.yml
+    curl -fsSL https://raw.githubusercontent.com/ff-fab/gas2mqtt/main/mosquitto.conf -o mosquitto.conf
     curl -fsSL https://raw.githubusercontent.com/ff-fab/gas2mqtt/main/.env.example -o .env
     # Edit .env with your MQTT broker and sensor settings
     ```
@@ -58,7 +59,7 @@ Connect the QMC5883L to the Raspberry Pi I2C pins:
     maps automatically.
 
     !!! note "Pin to a specific version"
-        Replace `latest` with a release tag (e.g. `v0.2.0`) in `docker-compose.yml`
+        Replace `latest` with a release tag (e.g. `0.2.0`) in `docker-compose.yml`
         to pin the deployment and avoid surprises on restart.
 
     !!! note "Custom I2C bus"
